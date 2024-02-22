@@ -34,8 +34,9 @@ def parse_addr(cdata):
         except:
             pass
 
-with open('coordinates', 'wb') as file:
-    pickle.dump(addrdic, file)
+    with open('coordinates', 'wb') as file:
+        pickle.dump(addrdic, file)
+    return addrdic
 
 def splbac(s,f):
     return (s[:s.find(f)],s[s.find(f):])
