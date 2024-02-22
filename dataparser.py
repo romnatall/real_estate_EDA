@@ -7,7 +7,35 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import re
+from geopy.geocoders import Nominatim
 
+def parse_addr(cdata):
+    addarr=cdata['adress']
+    addrdic={}
+
+    def get_metro_station_coordinates(station_name):
+        geolocator = Nominatim(user_agent="metro_locator")  
+
+        # Добавим "метро" к запросу для более точного результата
+        location = geolocator.geocode(f"{station_name} , Москва")
+
+        if location:
+            coordinates = (location.latitude, location.longitude)
+            return coordinates
+        else:
+            print(f"Координаты для станции метро {station_name} не найдены.")
+            return None
+
+    for i in addarr:
+        try:
+            if i in addrdic.keys():
+                continue
+            addrdic[i] = get_metro_station_coordinates(i)
+        except:
+            pass
+
+with open('coordinates', 'wb') as file:
+    pickle.dump(addrdic, file)
 
 def splbac(s,f):
     return (s[:s.find(f)],s[s.find(f):])
@@ -275,6 +303,7 @@ def process_balcony_info(s):
 
 def get_data(data):
     cdata = pd.DataFrame()
+    cdata['ID']=data['ID  объявления']
     cdata['price'] = get_price(data)
     cdata['col_rooms'] = get_col_room(data)
     cdata['ceiling_height'] = get_ceiling_height(data)
