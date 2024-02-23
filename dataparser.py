@@ -271,6 +271,7 @@ def process_window_info(s):
             return 1
         elif 'На улицу' in s:
             return 0
+        return 0
 
 
 # Функция для обработки информации о санузле
@@ -313,28 +314,23 @@ def get_data(data):
     cdata['metro_time'] = get_metro_time(data)
     cdata['adress'] = get_adress(data)
     cdata['full_area'] = get_area(data)
-    cdata['kitchen_area'] = get_kitchen_area(data)
-    cdata['living_area'] = get_living_area(data)
+    #cdata['kitchen_area'] = get_kitchen_area(data)
+    #cdata['living_area'] = get_living_area(data)
     cdata['floor'] = get_floor(data)
     cdata['num_floors'] = get_num_floors(data)
-    cdata['parking'] = data['Парковка']
+    #cdata['parking'] = data['Парковка']
     cdata['prolonged'] = get_prolonged(data)
     cdata['phone_number'] = get_phonenum(data)
     cdata['coord_y'] = get_coord_x(cdata).clip(lower=36.74401, upper=38.140841)
     cdata['coord_x'] = get_coord_y(cdata).clip(lower=55.386254, upper=56.119649)
     cdata['Furnished'] = data['Дополнительно'].apply(check_phrases)
 
-
     #Выводим в отдельную колонку общее число лифтов, вместо Nan у нас будет 0, потом мы это значение заполним средним по столбцу
-    cdata['elevator'] = data['Лифт'].astype(str).apply(lambda x: [int(num) for num in re.findall(r'\d+', x)])
-    cdata['elevator'] = cdata['elevator'].apply(lambda x: sum(x))
-    #Все значения равные 0 мы заменяем на среднее по столбцу
-    mean_value = cdata['elevator'][cdata['elevator'] != 0].mean()
-    cdata['elevator'] = cdata['elevator'].replace(0, mean_value).astype(int)
+    cdata['elevator'] = data['Лифт'].astype(str).apply(lambda x: sum([int(num) for num in re.findall(r'\d+', x)]))
+    cdata['elevator'] = cdata['elevator'].apply(lambda x: sum([int (i) for i in  list(str(x))]))
 
     #Обработка колонки "Мусоропровод"
     cdata['garbage_chute'] = data['Мусоропровод'].replace({'Да': 1, 'Нет': 0, np.nan: 0}).astype(int)
-
 
     # Применение функций к соответствующим столбцам данных
     cdata['repair'] = data['Ремонт'].apply(process_repair_info)
@@ -342,6 +338,6 @@ def get_data(data):
     cdata['balcony_count'] = data['Балкон'].apply(process_balcony_info)
     cdata['windows'] = data['Окна'].apply(process_window_info)
     cdata['bathroom'] = data['Санузел'].apply(process_bathroom_info)
+    cdata['bathroom'] = cdata['bathroom'].apply(lambda x: sum([int (i) for i in  list(str(x))]))
     cdata['child_pet'] = data['Можно с детьми/животными'].apply(process_children_pets_info)
-
     return cdata
